@@ -16,6 +16,7 @@ import org.joml.Vector4f;
 import comp3170.GLBuffers;
 import comp3170.Shader;
 import comp3170.ShaderLibrary;
+import static comp3170.Math.*;
 
 public class Scene {
 
@@ -31,6 +32,18 @@ public class Scene {
 
 	private Shader shader;
 
+	private Matrix4f modelMatrix = new Matrix4f();
+	private Matrix4f tMatrix = new Matrix4f();
+	private Matrix4f rMatrix = new Matrix4f();
+	private Matrix4f sMatrix = new Matrix4f();
+	
+	final private float offsetX = 0.2f;
+	final private float offsetY = 0.0f;
+	final private float scaleX = 0.1f;
+	final private float scaleY = 0.1f;
+	final private float rotation_rate = TAU/12;
+	final private int framerate = 60;
+	
 	public Scene() {
 
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -77,7 +90,29 @@ public class Scene {
 			// @formatter:on
 
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
+		
+//		float offsetX = 0.2f;
+//		float offsetY = 0.0f;
+//		float scaleX = 0.1f;
+//		float scaleY = 0.1f;
+//		float rotation = TAU/16;
+		//translationMatrix(offsetX,offsetY, tMatrix);
+		//scaleMatrix(scaleX,scaleY ,sMatrix); 
+		//rotationMatrix(rotation, rMatrix);
+		
+		//using JOML methods
+		//modelMatrix.translate(offsetX, offsetY, 0).rotateZ(rotation).scale(scaleX, scaleY, 0); // T R S order
+		
+		//modelMatrix.mul(tMatrix).mul(rMatrix).mul(sMatrix);	//trs order
+		modelMatrix.translate(0.6f,0f,0f).scale(scaleX,scaleY,0);
+		
 
+	}
+	
+	public void update(float deltaTime){
+		float rotation = rotation_rate * deltaTime;
+		modelMatrix.rotateZ(rotation);
+		modelMatrix.translate(0.0f,0.015f,0.0f);
 	}
 
 	public void draw() {
@@ -85,6 +120,8 @@ public class Scene {
 		shader.enable();
 		// set the attributes
 		shader.setAttribute("a_position", vertexBuffer);
+		shader.setUniform("u_modelMatrix", modelMatrix);
+		
 		shader.setAttribute("a_colour", colourBuffer);
 
 		// draw using index buffer
@@ -92,6 +129,7 @@ public class Scene {
 		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
+		
 
 	}
 
@@ -138,7 +176,7 @@ public class Scene {
 		dest.identity();
 		
 		dest.m00((float) (Math.cos(angle)));
-		dest.m10((float) -(Math.sin(angle)));
+		dest.m10((float) (Math.sin(-angle)));
 		dest.m01((float) (Math.sin(angle)));
 		dest.m11((float) (Math.cos(angle)));
 		return dest;
